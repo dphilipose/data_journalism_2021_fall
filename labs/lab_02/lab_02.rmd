@@ -104,7 +104,8 @@ lubridate_west_virginia_with_case_when <- west_virginia_with_case_when %>% mutat
 head(lubridate_west_virginia_with_case_when)
 
 west_virginia_with_case_when %>%
-  mutate(Month = floor_date(loan_status_date, "month")) %>%
+  #filter(date_approved > '2020-12-31') %>%
+  mutate(Month = floor_date(date_approved, "month")) %>%
   group_by(Month) %>%
   summarise(total = n()) %>%
   arrange(desc(total))
