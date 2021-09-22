@@ -177,7 +177,7 @@ maryland_ppp_with_naics_and_demographics %>%
 
 ### Task 16: Asking Demographic Questions
 **Task** Find the number of PPP loans that went to ZCTAs with more than 50% non-Hispanic white population, grouped by rural or urban status, and calculate the average and median amounts for those loans. Put your answers below.
-**Answer** 18337 loans went to ZCTAs with more than 50% non-Hispanic white population in rural areas, with an average loan amount of $73,694.14 and a median loan amount of $20,833. 95,600 loans went to ZCTAs with more than 50% non-Hispanic white population in urban areas, with an average loan amount of $90,911.14 and a median loan amount of $20833. 
+**Answer** 18337 loans went to ZCTAs with more than 50% non-Hispanic white population in rural areas, with an average loan amount of $73,694.14 and a median loan amount of $20,833. 95,600 loans went to ZCTAs with more than 50% non-Hispanic white population in urban areas, with an average loan amount of $90,911.14 and a median loan amount of $20833
 
 ```{r}
 # zcta with > 50% non-Hispanic white population grouped by rural/urban
