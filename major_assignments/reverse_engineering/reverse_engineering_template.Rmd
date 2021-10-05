@@ -25,7 +25,7 @@ In this notebook, we are reverse engineering the story, [STORY NAME](STORY URL)
 Loading required libraries for this analysis.
 
 ```{r echo=FALSE, message=FALSE}
-
+library(tidyverse)
 ```
 
 ## Load and Cleaning Data
@@ -34,12 +34,16 @@ In this section, describe the source of the data, write a basic data dictionary 
 
 ```{r}
 # Load required data
-
+fatal_police_shootings <- read_csv("data/fatal-police-shootings-data.csv")
 # Path to data should be loaded from folder "data" i.e. read_csv("data/name_of_data.csv")
 
 # Clean required data and prepare for analysis if needed. 
-
-
+fatal_police_shootings %>%
+  group_by(race) %>%
+  summarise(
+    count=n()
+  )%>%
+  arrange(desc(count))
 ```
 
 ## Sentences to Engineer
