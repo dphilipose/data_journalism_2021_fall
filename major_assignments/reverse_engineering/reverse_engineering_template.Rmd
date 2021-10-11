@@ -34,16 +34,12 @@ In this section, describe the source of the data, write a basic data dictionary 
 
 ```{r}
 # Load required data
-fatal_police_shootings <- read_csv("data/fatal-police-shootings-data.csv")
+Washington_Post_data<-read.csv("data/fatal-police-shootings-data.csv")
+
 # Path to data should be loaded from folder "data" i.e. read_csv("data/name_of_data.csv")
 
 # Clean required data and prepare for analysis if needed. 
-fatal_police_shootings %>%
-  group_by(race) %>%
-  summarise(
-    count=n()
-  )%>%
-  arrange(desc(count))
+
 ```
 
 ## Sentences to Engineer
@@ -51,12 +47,31 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 1
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+* **Sentence text**: ["About 31 percent, or 77, of the 247 women fatally shot by police since 2015 had mental health issues, compared to 22 percent of the 5,362 men killed."]
+* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?
+Our findings were a little different because the story was posted over a year ago (Sept. 4, 2020) and the Washington Post have keep updating the data. In the data, which was taken Sept. 28, 2020, we found that since 2015, the percentage of women fatally shot by police who had mental health issues was higher at roughly 32 percent (95 of the 293 women). Men who had mental health issues was around 22 percent still ( 1398 of the 6303 men killed).]
 
 ```{r}
 # Put code to reverse engineer sentence here
-
+women_fatally_shot<- Washington_Post_data %>%
+filter(gender=="F") %>%
+women_fatally_shot %>%
+group_by(signs_of_mental_illness) %>%
+summarise(
+total=n(),
+percentage=total/293
+) %>%
+arrange(desc(total))
+#Men percentage
+men_fatally_shot<-Washington_Post_data %>%
+filter(gender=="M")
+men_fatally_shot %>%
+group_by(signs_of_mental_illness) %>%
+summarize(
+  count=n(),
+  percentage=count/6298
+) %>%
+arrange(desc(count))
 # Display results of code below this codeblock
 
 ```
