@@ -52,37 +52,65 @@ In this notebook, we are reverse engineering five sentences from the story.
 Our findings were a little different because the story was posted over a year ago (Sept. 4, 2020) and the Washington Post have keep updating the data. In the data, which was taken Sept. 28, 2020, we found that since 2015, the percentage of women fatally shot by police who had mental health issues was higher at roughly 32 percent (95 of the 293 women). Men who had mental health issues was around 22 percent still ( 1398 of the 6303 men killed).]
 
 ```{r}
+
+# Put code to reverse engineer sentence here
+mental_illness <- Washington_Post_data %>%
+  #filter(gender=="F") %>%
+  group_by(gender,signs_of_mental_illness) %>%
+  summarise(
+    total=n()
+  ) %>%
+  mutate(percentage=total/sum(total)) %>%
+  arrange(desc(total))
+
+
 # Put code to reverse engineer sentence here
 women_fatally_shot <- Washington_Post_data %>%
-filter(gender=="F") %>%
-group_by(signs_of_mental_illness) %>%
-summarise(
-total=n(),
-percentage=total/293
-) %>%
-arrange(desc(total))
+  filter(gender=="F") %>%
+  group_by(signs_of_mental_illness) %>%
+  summarise(
+    total=n()
+  ) %>%
+  mutate(percentage=total/sum(total)) %>%
+  arrange(desc(total))
+
 #Men percentage
-men_fatally_shot<-Washington_Post_data %>%
-filter(gender=="M")
-men_fatally_shot %>%
-group_by(signs_of_mental_illness) %>%
-summarize(
-  count=n(),
-  percentage=count/6298
-) %>%
-arrange(desc(count))
+men_fatally_shot <- Washington_Post_data %>%
+  filter(gender =="M") %>%
+  group_by(signs_of_mental_illness) %>%
+  summarize(
+    total=n(),
+    ) %>%
+    mutate(percentage=total/sum(total)) %>%
+  arrange(desc(count))
 # Display results of code below this codeblock
 
 ```
 
 ### Sentence 2
 
-* **Sentence text**: [Paste in sentence to engineer here]
+* **Sentence text**: [Since 2015, Black women have accounted for less than 1 percent of the overall fatal shootings in cases where race was known. But within this small subset, Black women, who are 13 percent of the female population, account for 20 percent of the women shot and killed and 28 percent of the unarmed deaths]
 * **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
 
 ```{r}
 # Put code to reverse engineer sentence here
+Black_women <- Washington_Post_data %>%
+  filter(gender == "F") %>%
+  group_by(race) %>%
+  summarise(
+    count=n()
+  ) %>%
+  mutate(pct_by_race=count/sum(count))
 
+Unarmed_black_women <- Washington_Post_data %>%
+  filter(gender == "F") %>%
+  filter(armed == "unarmed") %>%
+  group_by(race) %>%
+  summarise(
+    count=n()
+  ) %>%
+  mutate(pct_by_race=count/28)
+  
 # Display results of code below this codeblock
 
 ```
