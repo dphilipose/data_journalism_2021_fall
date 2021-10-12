@@ -34,7 +34,7 @@ In this section, describe the source of the data, write a basic data dictionary 
 
 ```{r}
 # Load required data
-Washington_Post_data<-read.csv("data/fatal-police-shootings-data.csv")
+Washington_Post_data <-read_csv("data/fatal-police-shootings-data.csv")
 
 # Path to data should be loaded from folder "data" i.e. read_csv("data/name_of_data.csv")
 
@@ -53,9 +53,8 @@ Our findings were a little different because the story was posted over a year ag
 
 ```{r}
 # Put code to reverse engineer sentence here
-women_fatally_shot<- Washington_Post_data %>%
+women_fatally_shot <- Washington_Post_data %>%
 filter(gender=="F") %>%
-women_fatally_shot %>%
 group_by(signs_of_mental_illness) %>%
 summarise(
 total=n(),
