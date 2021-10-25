@@ -22,6 +22,8 @@ You'll need to load two packages for this: the tidyverse and tidycensus.
 ```{r}
 # Turn off scientific notation
 options(scipen=999)
+library(tidyverse)
+library(tidycensus)
 ```
 
 ## Setup Census API
@@ -31,6 +33,8 @@ You'll need your Census API Key:
 **Task** set your API Key
 
 ```{r echo=FALSE}
+
+census_api_key("ecc9de473791a7abefbf6a790370fa48e64b85aa", install=TRUE, overwrite=TRUE)
 ```
 
 ## Load and view ACS variables
@@ -41,6 +45,9 @@ You'll also need to load the list of American Community Survey variables from th
 
 ```{r}
 # Write code here to load the ACS variables
+
+acs_variables <- load_variables(2019, "acs5", cache = FALSE)
+
 ```
 
 ## Load PPP data
@@ -50,40 +57,101 @@ You'll also need to load an RDS file of PPP loan applications that were removed 
 **Task** read the RDS file and save it to a dataframe
 
 ```{r}
-Write code here to read the RDS file
+#Write code here to read the RDS file
+
+md <- read_rds("data/lab_08.rds")
 ```
 
 ## Answer questions
 
 **Q1** What is the Maryland jurisdiction with the lowest median age, according to the ACS 2019 5-year estimates? You will need to find the variable for median age first.
-**A1**
+**Baltimore City has the lowest median age, at 35.1 years old.**
 
 ```{r}
+md19_median_age <- get_acs(geography = "county",
+              variables = c(medage = "B01002_001"),
+              state = "MD",
+              year = 2019)
+
+
+
+
+
 ```
 
 **Q2** Which Maryland counties have a median age of at least 50?
-**A2**
+**Talbot County and Worchester County have a median age above 50.**
 
 ```{r}
+md19_median_age %>%
+  filter(estimate >= 50)
 ```
 
 **Q3** Which Maryland counties have the highest percentage of 5-17 year-olds that speak Spanish at home? You'll need one dataframe with county-level data on the number of 5-17 year-olds that speak Spanish at home and a second dataframe with the total population of 5-17 year-olds by county. For each dataframe, rename the `estimate` column to a meaningful name you've given the ACS variable, remove the `variable` columns in each using select and then join them based on GEOID and NAME. Then you can add a column to calculate the percentage of the total 5-17 population that speaks Spanish at home.
-**A3**
+**Prince George's County, Montgomery County, and Caroline County have the highest percentages of 5 to 17 year-olds that speak Spanish.**
 
 ```{r}
+md19_spanish_speaking <- get_acs(geography = "county",
+              variables = c(spanish_speaking = "B16007_004"),
+              state = "MD",
+              year = 2019)
+
+md19_5_17_pop <- get_acs(geography = "county",
+              variables = c(total_pop_5_to_17 = "B16007_002"),
+              state = "MD",
+              year = 2019)
+
+spanish_speaking_md19 <- md19_spanish_speaking %>% left_join(md19_5_17_pop, by=c('GEOID', 'NAME')) 
+ 
+
+  
+clean_spanish_speaking_md19 <- spanish_speaking_md19  %>%
+  rename(spanish_speaking_5_to_17_yo = estimate.x ) %>%
+  rename(total_pop_5_to_17_yo = estimate.y) %>%
+  mutate(pct_spanish_speaking=((spanish_speaking_5_to_17_yo)/(total_pop_5_to_17_yo))*100) %>%
+  arrange(desc(pct_spanish_speaking))
+  
 ```
 
 **Q4** Given the counties with the largest percentage of 5-17 year-olds that speak Spanish at home, what stands out to you about the data? How would you describe the top 5 counties? How would you describe Garrett County's numbers?
-**A4**
+**I'm not surprised that Montgomery County and Prince George's County have the highest percentages of 5 to 17-year-olds that speak Spanish, as both counties are pretty diverse areas. Garrett County's numbers are extremely low, with less than 1% of the age group indicating the ability to speak Spanish. **
 
 **Q5** Which 5-digit zip code had the most removed PPP applications, and what is the percentage of Black population in that zip code according to the ACS? To answer this question, you will need to creeate separate dataframes with ACS data on total population by zip code and Black population by zip code. In each dataframe, rename the `estimate` column and remove the `variable` column. You'll need to combine the two dataframes in order to calculate the percentage, and then you can combine it with the PPP data. Remember: the PPP data may not have only 5-digit zip codes!
-**A5**
+**The zip code 60620 was the zip code with the most removed PPP applications, and according to ACS data, roughly 95% of the population in that zip code is Black. **
 
 ```{r}
+removed_ppp <- md %>%
+  mutate(zip = str_sub(zip, start=1L, end=5L)) %>%
+  group_by(zip) %>%
+  summarise(
+    count=n(),
+  ) %>%
+  arrange(desc(count))
+
+total_pop_by_zip <- get_acs(geography = "zcta",
+              variables = c(black_pop = "B01001_001"),
+              state = "IL",
+              year = 2019)
+
+total_black_pop_by_zip <- get_acs(geography = "zcta",
+              variables = c(black_pop = "B01001B_001"),
+              state = "IL",
+              year = 2019)
+
+cleaned_pop <- total_pop_by_zip %>% inner_join(total_black_pop_by_zip, by=c("GEOID", "NAME")) %>%
+  select(-variable.x, -variable.y, -moe.x, -moe.y) %>%
+  rename(total_population = estimate.x, black_population = estimate.y) %>%
+  mutate(pct_black_pop= ((black_population/total_population))*100) %>%
+  arrange(desc(pct_black_pop)) 
+  
+total_pop_and_ppp_data <- cleaned_pop %>% left_join(removed_ppp, by=c('GEOID' = 'zip')) %>%
+  arrange(desc(count))
+
+
 ```
 
 **Q6** How would you describe to an editor the top 10 zip codes with the most removed application in terms of Black population? Where are they located, and what do they have in common? Are there any zip codes that seem different, and if so why?
-**A6**
+**Seven of the ten zip codes are at least 75% Black, and only one zip code has less than a 50% Black population. They're all located within the city of Chicago, and the cities with the highest black populations are on the south side of Chicago.**
 
 **Q7** What other columns from the PPP data could be useful in reporting on what happened to this removed loans?
-**A7**
+**Since the data on these loans was removed by the lenders, I would go through the 'lender' column and see if any trends appear. **
