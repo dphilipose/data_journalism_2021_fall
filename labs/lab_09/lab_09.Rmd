@@ -16,6 +16,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Load libraries and establish settings
 
 **Task** Create a codeblock and load appropriate packages and settings for this lab.
+```{r}
+census_api_key("ecc9de473791a7abefbf6a790370fa48e64b85aa", install=TRUE, overwrite=TRUE)
+
+library(tidyverse)
+library(tidycensus)
+```
 
 ## Questions
 
@@ -30,6 +36,35 @@ You MUST do the following things when answering this question:
   * adds a small circle (called a "point") on the line for dates that had loans. And to the left of each circle/point, shows the number of loans on that date.  I didn't show you how to do this in the prelab, so do some web sleuthing to figure it out! 
 
 Basically, your chart should look like this image, which will appear when you run the codeblock below. 
+```{r}
+wv_ppp <- read_rds("data/lab_09.rds")
+
+wv_ppp_april <- wv_ppp %>%
+  filter(date_approved >= "2020-04-01" & date_approved <= "2020-04-30" ) %>%
+  group_by(date_approved) %>%
+  summarise(
+    total_loans = n()
+  ) %>%
+  arrange(desc(total_loans))
+
+wv_ppp_april %>%
+  ggplot() +
+  geom_line(aes(x=date_approved, y=total_loans)) +
+  scale_x_date(date_breaks = "1 day") +
+  theme(
+    axis.text.x = element_text(angle = 45,  hjust=1)
+  ) +
+  labs(
+    title="West Virginia PPP Loans Approved by Date, April 2020",
+    x = "Date",
+    y = "Total Loans Approved",
+    caption = "Source: SBA PPP loan database"
+  ) +
+  geom_point(aes(x=date_approved, y=total_loans)) +
+  geom_text(aes(x=date_approved, y=total_loans,label=total_loans),nudge_x = -1,
+  nudge_y = 0, check_overlap=T)
+
+```
 
 ```{r}
 knitr::include_graphics(rep("images/chart_1.png"))
@@ -43,6 +78,30 @@ knitr::include_graphics(rep("images/chart_1.png"))
 * Use the tidycensus API to get a table of total population by state from the American Community Survey (ACS). To do this, you'll use use the alphanumeric variable for total population, which has the following "label" and "concept": "Estimate!!Total:" and "SEX BY AGE".  
 * Use ggplot to make a horizontal bar chart that shows the top 10 states, with the length of the bar determined by the state's total PPP loans per 100,000 people. Give it an appropriate title, source, and x and y axis titles. 
 * Make the bars on the chart blue! I didn't show you how to do this in the prelab, so do some web sleuthing to figure it out.  
+```{r}
+
+state_ppp_loans <- read_csv("data/state_ppp_all.csv") %>%
+  mutate(state = case_when(
+    state == "N Dakota" ~ "North Dakota",
+    state == "S Dakota" ~ "South Dakota",
+     TRUE ~ state
+  )) 
+acs_variables <- load_variables(2019, "acs5", cache = FALSE)
+pop_by_state <- get_acs(geography = "state",
+              variables = c(population = "B01001_001"),
+              year = 2019)
+clean_pop_by_state <- pop_by_state %>%
+  select (-variable, -moe) %>%
+  rename(state = NAME, Population = estimate)
+
+state_ppp_and_pop <- state_ppp_loans %>% left_join(clean_pop_by_state, by=c('state')) %>%
+  select(-GEOID)
+  
+state_ppp_per100k <- state_ppp_and_pop %>%  
+  mutate(loans_per_100k= ((total_ppp_loans/Population))*100000) %>%
+  arrange(desc(loans_per_100k)) %>%
+  head(10)
+```
 
 **A2.** 
 
