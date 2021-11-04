@@ -111,6 +111,9 @@ Statisticians use scatterplots to show graphically whether one variable is corre
 
 ```{r}
 knitr::include_graphics(rep("images/chart_2.png"))
+
+#ggscatter
+
 ```
 
 We're going to use a scatterplot a little differently, to get a visual sense of two key variables: the amount of an approved PPP loan, and the amount that was later forgiven. We'll use it to answer some questions in a broad sense, about loan forgiveness.  This is just a jumping off point for further exploration. 
