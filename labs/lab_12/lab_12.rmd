@@ -47,10 +47,43 @@ Then write code that will construct the sentence about the data described above 
 
 Put your sentence in the answer below.
 
-**A1.**
+**A1.** (1)The number of children under the age of 11 that  recieved a Covid-19 shot on November 17 decreased by -68.27 percent compared to one week before.
 
 ```{r}
+
+raw_data <- read_csv("https://raw.githubusercontent.com/state-of-maryland/VaccineCSVs/master/MD_COVID19_VaccinationPercentAgeGroupPopulation.csv")
+
+#Change date column & filter out age groups 
+
+under_12_vax <- raw_data %>%
+  mutate(VACCINATION_DATE = date(mdy_hms(VACCINATION_DATE))) %>%
+  filter(AgeRange == "11 and Under") %>%
+  mutate(day_of_the_week = weekdays(VACCINATION_DATE)) %>%
+  arrange(desc(VACCINATION_DATE))
+
+
+latest_date <- under_12_vax %>% slice(1)
+day_before <- under_12_vax %>% slice(2)
+a_week_ago <- under_12_vax %>% filter(VACCINATION_DATE == latest_date$VACCINATION_DATE - 7) 
+
+latest_date <- latest_date %>%
+  mutate(daily_pct_change = (FirstDailyDose - day_before$FirstDailyDose)/day_before$FirstDailyDose *100) %>%
+  mutate(weekly_pct_change = (FirstDailyDose - a_week_ago$FirstDailyDose)/a_week_ago$FirstDailyDose *100)
+  
+#weekly change sentence   
+changetext <- round(latest_date$weekly_pct_change[[1]], digits=2)
+direction <- if_else(changetext > 0, "increased", "decreased")
+
+sub <- paste("The number of children under the age of 11 that recieved a Covid-19 shot on ", format(latest_date$VACCINATION_DATE, format="%B %d"), " ", direction, " by ", changetext, " percent compared to one week before.", sep="")
+sub
+
+#daily change sentence 
+changetext2 <- round(latest_date$daily_pct_change[[1]], digits=2)
+direction2 <- if_else(changetext > 0, "increased", "decreased")
+sub <- paste("The number of children under the age of 11 that recieved a Covid-19 shot on ", format(latest_date$VACCINATION_DATE, format="%B %d"), " ", direction2, " by ", changetext2, " percent compared to the previous day.", sep="")
+sub
 ```
+
 
 **Q2.** Maryland produces a [CSV file](https://raw.githubusercontent.com/state-of-maryland/VaccineCSVs/master/Vax_ZIP_CODE_FirstSecondSingle_Totals_Raw.csv) showing the total number of vaccinations by zip code and -- interestingly -- it includes non-Maryland zip codes (as well as some zip codes that seem to be bad data). write a script that reads the CSV file, making the columns more readable and adding today's date. Then output the top 25 Maryland zip codes and top 25 non-Maryland zip codes based on number of people fully vaccinated, and write both dataframes out to CSV files, using the following name formats:
 
@@ -67,9 +100,35 @@ To do that, you will need to:
 
 Google the top 2-3 zip codes from both Maryland and non-Maryland results and describe them in your answer.
 
+
 **A2.**
 
 ```{r}
+vax_by_zip <- read_csv("https://raw.githubusercontent.com/state-of-maryland/VaccineCSVs/master/Vax_ZIP_CODE_FirstSecondSingle_Totals_Raw.csv") %>%
+  clean_names() %>%
+  filter(!is.na(fully_vaccinated)) %>%
+  mutate(todays_date=today()) %>%
+  filter(zip_code >= 10000) %>%
+  filter(zip_code <= 100000)
+
+md_zips <- vax_by_zip %>%
+  filter(zip_code >= 20588) %>%
+  filter(zip_code <= 21930) %>%
+  arrange(desc(fully_vaccinated)) %>%
+  head(25) %>%
+
+
+
+non_md_zips <- vax_by_zip %>%
+  filter(!(zip_code <= 20587 & zip_code>=21931)) %>%
+  arrange(desc(fully_vaccinated)) %>%
+  head(25)
+
+write_csv(md_zips, "export_md_zips.csv") 
+
+#filter out top 25
+#write_csv for each dataframe 
+
 ```
 
 **Q3.** Maryland has had one of the more successful vaccination rates, but you want to understand where a significant portion of the population remains less than fully vaccinated. Make a dataframe of all Maryland zip codes from the vaccination data you used in Q2 and join it to Maryland zip code population data from the Census API. Calculate the percentage of fully vaccinated for each zip code and then make a map showing the zip codes with less than 50 percent fully vaccinated. Put a blank map with the outline of Maryland counties (which you can get from Tigris) behind it for context. Add a label to the map describing what the data is and include the date from the vaccination data (programmatically, so you can run it every day).
