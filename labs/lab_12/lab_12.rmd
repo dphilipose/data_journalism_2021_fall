@@ -116,15 +116,17 @@ md_zips <- vax_by_zip %>%
   filter(zip_code <= 21930) %>%
   arrange(desc(fully_vaccinated)) %>%
   head(25) %>%
+  write_csv(paste0("md_zips", date(),"export_md_zips.csv"))
 
 
 
 non_md_zips <- vax_by_zip %>%
   filter(!(zip_code <= 20587 & zip_code>=21931)) %>%
   arrange(desc(fully_vaccinated)) %>%
-  head(25)
+  head(25) %>%
+  write_csv(paste0("non_md_zips", date(),"export_md_zips.csv"))
 
-write_csv(md_zips, "export_md_zips.csv") 
+ 
 
 #filter out top 25
 #write_csv for each dataframe 

@@ -53,10 +53,10 @@ We'll read it into a dataframe like usual and clean up the column names:
 
 ### Task 2: Read vaccination data into dataframe
 **Task** Run the following code and describe the dataframe
-**Answer** Table describing the number of vaccinations administered each dya by county in Maryland. 
+**Answer** Table describing the number of vaccinations administered each day by county in Maryland. 
 
 ```{r}
-county_vaccinations_by_date <- read_csv("https://raw.githubusercontent.com/state-of-maryland/VaccineCSVs/master/MD_COVID19_TotalVaccinationsCountyFirstandSecondSingleDose.csv") %>%
+county_vaccinations_by_date <- read.csv("https://raw.githubusercontent.com/state-of-maryland/VaccineCSVs/master/MD_COVID19_TotalVaccinationsCountyFirstandSecondSingleDose.csv") %>%
   clean_names()
 View(county_vaccinations_by_date)
 ```
